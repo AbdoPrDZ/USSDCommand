@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Android Devices</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7"
+      crossorigin="anonymous"
+    />
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq"
+      crossorigin="anonymous"
+    ></script>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">Android Devices</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="container mt-5">
+      <div class="table-responsive">
+        <table
+          class="table table-striped table-bordered align-middle text-center"
+        >
+          <thead class="table-dark">
+            <tr>
+              <th>Device ID</th>
+              <th>Device Name</th>
+              <th>Device Version</th>
+              <th>Device Manufacturer</th>
+              <th>SDK Version</th>
+              <th>Device Brand</th>
+              <th>Device Hardware</th>
+              <th>Device Fingerprint</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="devices-table-loading" class="d-none">
+            <tr class="table-row">
+              <td colspan="9" class="text-center">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+          <tbody id="devices-table-body">
+            <tr class="table-row">
+              <td colspan="9" class="text-center">
+                <span class="text-muted">No devices available</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/handlebars@4.7.7/dist/handlebars.min.js"></script>
+    <script>
+      async function fetchDevices() {
+        try {
+          const response = await $.ajax({
+            url: "http://localhost:5678/webhook/android-devices",
+            method: "GET",
+            dataType: "json",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          });
+          console.log("Response:", response);
+          return response;
+        } catch (error) {
+          console.error("Error fetching devices:", error);
+          return [];
+        }
+      }
+
+      async function loadDevices() {
+        $("#devices-table-loading").removeClass("d-none");
+        $("#devices-table-body").addClass("d-none");
+
+        const devices = await fetchDevices();
+        console.log("Devices:", devices);
+        const source = `
+          {{#each devices}}
+            <tr class="table-row">
+              <td>{{"Device ID"}}</td>
+              <td>{{"Device Name"}}</td>
+              <td>{{"Device Version"}}</td>
+              <td>{{"Device Manufacturer"}}</td>
+              <td>{{"SDK Version"}}</td>
+              <td>{{"Device Brand"}}</td>
+              <td>{{"Device Hardware"}}</td>
+              <td>{{"Device Fingerprint"}}</td>
+              <td class="status {{Status}}">{{Status}}</td>
+            </tr>
+          {{/each}}`;
+
+        const template = Handlebars.compile(source);
+        const html = template({ devices });
+        $("#devices-table-body").html(html);
+        $("#devices-table-body").removeClass("d-none");
+        $("#devices-table-loading").addClass("d-none");
+      }
+
+      $(document).ready(function () {
+        loadDevices();
+      });
+    </script>
+    <style>
+      .table-row {
+        cursor: pointer;
+      }
+      .table-row:hover {
+        background-color: #f1f1f1;
+      }
+      .status {
+        font-weight: bold;
+      }
+      .status.Connected {
+        color: green;
+      }
+      .status.Disconnected {
+        color: red;
+      }
+    </style>
+  </body>
+</html>

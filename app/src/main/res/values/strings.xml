@@ -1,6 +1,0 @@
-<resources>
-    <string name="app_name">USSD Command</string>
-    <string name="action_settings">Settings</string>
-
-    <string name="ussd_service">This service allows the app to interact with USSD sessions.</string>
-</resources>
